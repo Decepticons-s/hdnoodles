@@ -26,7 +26,7 @@
       <div class="payment-methods">
         <h3>选择支付方式</h3>
         <el-radio-group v-model="paymentMethod">
-          <el-radio label="unionpay">
+          <el-radio value="unionpay">
             <el-icon><CreditCard /></el-icon>
             银联支付
           </el-radio>
@@ -72,8 +72,10 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
 import { useOrderStore } from '../stores/order'
+import { printOrder } from '../services/print'
 import { CreditCard, CircleCheck } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import jsQR from 'jsqr'
 
 const router = useRouter()
 const cartStore = useCartStore()
@@ -83,6 +85,31 @@ const paymentMethod = ref('unionpay')
 const processing = ref(false)
 const showSuccessDialog = ref(false)
 const currentOrder = ref(null)
+
+// 解析二维码图片
+const decodeQRCode = async () => {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.src = '/images/payment.jpg'
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      canvas.width = img.width
+      canvas.height = img.height
+      ctx.drawImage(img, 0, 0, img.width, img.height)
+      const imageData = ctx.getImageData(0, 0, img.width, img.height)
+      const code = jsQR(imageData.data, imageData.width, imageData.height)
+      if (code) {
+        resolve(code.data)
+      } else {
+        reject(new Error('无法解析二维码'))
+      }
+    }
+    img.onerror = (err) => {
+      reject(err)
+    }
+  })
+}
 
 // 处理支付
 const handlePayment = async () => {
@@ -99,20 +126,35 @@ const handlePayment = async () => {
       cartStore.total
     )
     
-    // 生成支付链接
-    const amount = Math.round(cartStore.total * 100) // 转换为分
-    const paymentUrl = `https://ap.scrcu.com/payweb/mobile/mer/pay.html?qrCode=https://qr.95516.com/00010000/01224895077923008075686116433377&amount=${amount}`
+    // 解析二维码并获取支付链接
+    const paymentUrl = await decodeQRCode()
     
     // 打开支付页面
-    window.open(paymentUrl, '_blank')
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      window.location.href = paymentUrl
+    } else {
+      const paymentWindow = window.open(paymentUrl, '_blank')
+      if (!paymentWindow || paymentWindow.closed) {
+        throw new Error('支付页面被阻止，请允许弹出窗口')
+      }
+    }
     
     // 清空购物车
     cartStore.clearCart()
     
     // 显示成功弹窗
     showSuccessDialog.value = true
+
+    // 打印小票
+    ElMessage.info('正在打印小票，请稍候...')
+    try {
+      await printOrder(currentOrder.value)
+      ElMessage.success('小票打印成功')
+    } catch (error) {
+      ElMessage.error('小票打印失败，请联系工作人员')
+    }
   } catch (error) {
-    ElMessage.error('支付失败，请重试')
+    ElMessage.error(error.message || '支付失败，请重试')
   } finally {
     processing.value = false
   }

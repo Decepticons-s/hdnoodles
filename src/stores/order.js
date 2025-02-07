@@ -17,7 +17,7 @@ export const useOrderStore = defineStore('order', () => {
 
   function createOrder(cartItems, total) {
     const orderNumber = `${new Date().getFullYear()}${String(currentOrderNumber.value).padStart(6, '0')}`
-    const pickupNumber = Math.floor(Math.random() * 90) + 10 // 生成10-99的取餐号
+    const pickupNumber = currentOrderNumber.value // 取餐号从1开始
 
     const order = {
       id: Date.now(),

@@ -95,7 +95,7 @@
                 <el-radio-button 
                   v-for="type in currentProduct.options.types" 
                   :key="type" 
-                  :label="type"
+                  :value="type"
                 />
               </el-radio-group>
             </div>
@@ -106,7 +106,7 @@
                 <el-radio-button 
                   v-for="flavor in currentProduct.options.flavors" 
                   :key="flavor" 
-                  :label="flavor"
+                  :value="flavor"
                 />
               </el-radio-group>
             </div>
@@ -117,7 +117,7 @@
                 <el-radio-button 
                   v-for="practice in currentProduct.options.practices" 
                   :key="practice" 
-                  :label="practice"
+                  :value="practice"
                 />
               </el-radio-group>
             </div>
@@ -128,7 +128,7 @@
                 <el-radio-button 
                   v-for="portion in currentProduct.options.portions" 
                   :key="portion" 
-                  :label="portion"
+                  :value="portion"
                 />
               </el-radio-group>
             </div>

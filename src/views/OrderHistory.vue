@@ -10,7 +10,7 @@
 
     <div class="order-list">
       <el-tabs v-model="activeTab">
-        <el-tab-pane label="全部订单" name="all">
+        <el-tab-pane name="all" label="全部订单">
           <div class="orders-grid">
             <div v-for="order in filteredOrders" :key="order.id" class="order-card">
               <div class="order-header">
@@ -44,13 +44,13 @@
           </div>
         </el-tab-pane>
         
-        <el-tab-pane label="待取餐" name="pending">
+        <el-tab-pane name="pending" label="待取餐">
           <div class="orders-grid">
             <!-- 使用相同的订单卡片组件 -->
           </div>
         </el-tab-pane>
 
-        <el-tab-pane label="已完成" name="completed">
+        <el-tab-pane name="completed" label="已完成">
           <div class="orders-grid">
             <!-- 使用相同的订单卡片组件 -->
           </div>
