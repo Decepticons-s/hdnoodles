@@ -130,29 +130,33 @@ const handlePayment = async () => {
     const paymentUrl = await decodeQRCode()
     
     // 打开支付页面
-    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-      window.location.href = paymentUrl
-    } else {
-      const paymentWindow = window.open(paymentUrl, '_blank')
-      if (!paymentWindow || paymentWindow.closed) {
-        throw new Error('支付页面被阻止，请允许弹出窗口')
-      }
-    }
+    const paymentWindow = window.open(paymentUrl, '_blank')
     
-    // 清空购物车
-    cartStore.clearCart()
-    
-    // 显示成功弹窗
-    showSuccessDialog.value = true
+    // 监听支付窗口是否关闭
+    const checkPaymentWindow = setInterval(async () => {
+      if (paymentWindow.closed) {
+        clearInterval(checkPaymentWindow)
+        console.log('支付窗口已关闭，开始打印小票')
+        // 假设支付成功，更新订单状态
+        orderStore.updateOrderStatus(currentOrder.value.id, 'paid')
+        
+        // 清空购物车
+        cartStore.clearCart()
+        
+        // 显示成功弹窗
+        showSuccessDialog.value = true
 
-    // 打印小票
-    ElMessage.info('正在打印小票，请稍候...')
-    try {
-      await printOrder(currentOrder.value)
-      ElMessage.success('小票打印成功')
-    } catch (error) {
-      ElMessage.error('小票打印失败，请联系工作人员')
-    }
+        // 打印小票
+        ElMessage.info('正在打印小票，请稍候...')
+        try {
+          await printOrder(currentOrder.value)
+          ElMessage.success('小票打印成功')
+        } catch (error) {
+          console.error('打印小票时发生错误：', error)
+          ElMessage.error('小票打印失败，请联系工作人员')
+        }
+      }
+    }, 1000)
   } catch (error) {
     ElMessage.error(error.message || '支付失败，请重试')
   } finally {

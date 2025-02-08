@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [
     vue(),
     nodePolyfills({
-      include: ['crypto'] // 只 polyfill crypto 模块
+      include: ['crypto'] // 确保 crypto 模块被 polyfill
     })
   ],
   server: {

@@ -1,16 +1,16 @@
 import axios from 'axios'
-import { createHash } from 'crypto'
 import iconv from 'iconv-lite'
+import SHA1 from 'crypto-js/sha1'
 
 const USER = 'sonnyeee@outlook.com' // 用户邮箱
 const USER_KEY = '0a573c4eab424185baf408b953ca1e08' // 开发者密钥
 const SN = '02S234163178448' // 设备 SN
-const PRINT_URL = 'https://open.xpyun.net/api/openapi/xprinter/print'
+const PRINT_URL = '/api/openapi/xprinter/print'
 
 // 生成签名
 function generateSign(user, userKey, timestamp) {
   const str = user + userKey + timestamp
-  return createHash('sha1').update(str).digest()
+  return SHA1(str).toString()
 }
 
 // 生成当前时间戳（10位）
@@ -28,9 +28,6 @@ export async function printOrder(order) {
   const timestamp = generateTimestamp()
   const sign = generateSign(USER, USER_KEY, timestamp)
 
-  console.log('签名：', sign)
-  console.log('签名长度：', sign.length)
-
   // 将打印内容转换为 GBK 编码
   const gbkContent = encodeToGBK(printContent)
 
@@ -43,6 +40,7 @@ export async function printOrder(order) {
   }
 
   try {
+    console.log('请求参数：', params)
     const response = await axios.post(PRINT_URL, params, {
       headers: {
         'Content-Type': 'application/json;charset=UTF-8'
