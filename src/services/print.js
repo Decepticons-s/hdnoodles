@@ -41,19 +41,31 @@ export async function printOrder(order) {
 
   try {
     console.log('请求参数：', params)
-    const response = await axios.post(PRINT_URL, params, {
+    const response = await fetch(PRINT_URL, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json;charset=UTF-8'
-      }
+      },
+      body: JSON.stringify(params)
     })
-    console.log('服务器响应：', response)
-    if (response.data.code !== 0) {
-      throw new Error(`打印失败：${response.data.message}`)
+
+    // 首先检查响应状态
+    if (!response.ok) {
+      // 如果响应不是 2xx，尝试读取错误信息
+      const errorText = await response.text()
+      throw new Error(`服务器错误：${response.status} - ${errorText}`)
+    }
+
+    // 尝试解析 JSON
+    const data = await response.json()
+    console.log('服务器响应：', data)
+    if (data.code !== 0) {
+      throw new Error(`打印失败：${data.message}`)
     }
     return true
   } catch (error) {
-    console.error('打印错误：', error.response || error)
-    throw error
+    console.error('打印错误：', error)
+    throw new Error(`打印失败：${error.message}`)
   }
 }
 

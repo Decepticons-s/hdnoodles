@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
 import { useOrderStore } from '../stores/order'
@@ -113,6 +113,8 @@ const decodeQRCode = async () => {
 
 // 处理支付
 const handlePayment = async () => {
+  // 确保此逻辑在手机上也能正常执行
+  console.log('开始处理支付')
   if (cartStore.items.length === 0) {
     ElMessage.warning('购物车为空')
     return
@@ -129,36 +131,14 @@ const handlePayment = async () => {
     // 解析二维码并获取支付链接
     const paymentUrl = await decodeQRCode()
     
-    // 打开支付页面
-    const paymentWindow = window.open(paymentUrl, '_blank')
-    
-    // 监听支付窗口是否关闭
-    const checkPaymentWindow = setInterval(async () => {
-      if (paymentWindow.closed) {
-        clearInterval(checkPaymentWindow)
-        console.log('支付窗口已关闭，开始打印小票')
-        // 假设支付成功，更新订单状态
-        orderStore.updateOrderStatus(currentOrder.value.id, 'paid')
-        
-        // 清空购物车
-        cartStore.clearCart()
-        
-        // 显示成功弹窗
-        showSuccessDialog.value = true
+    // 使用 location.href 跳转到支付页面
+    window.location.href = paymentUrl
 
-        // 打印小票
-        ElMessage.info('正在打印小票，请稍候...')
-        try {
-          await printOrder(currentOrder.value)
-          ElMessage.success('小票打印成功')
-        } catch (error) {
-          console.error('打印小票时发生错误：', error)
-          ElMessage.error('小票打印失败，请联系工作人员')
-        }
-      }
-    }, 1000)
+    await printOrder(currentOrder.value)
+    ElMessage.success('小票打印成功')
   } catch (error) {
-    ElMessage.error(error.message || '支付失败，请重试')
+    console.error('打印小票时发生错误：', error)
+    ElMessage.error('小票打印失败，请联系工作人员')
   } finally {
     processing.value = false
   }
@@ -171,6 +151,10 @@ const viewOrderDetails = () => {
 const backToHome = () => {
   router.push('/')
 }
+
+onMounted(() => {
+  console.log('支付页面已加载')
+})
 </script>
 
 <style lang="scss" scoped>
