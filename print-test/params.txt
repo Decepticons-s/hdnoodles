@@ -1,0 +1,7 @@
+请求接口：@https://open.xpyun.net/api/openapi/xprinter/print 请求方式是POST 开发者自己写的请求以表单方式提交数据，请求头需要使用Content-Type: application/json;charset=UTF-8，请勿使用其它方式提交数据。
+公共参数（所有请求都必须传递的参数。）：user，类型string，值sonnyeee@outlook.com
+公共参数（所有请求都必须传递的参数。）：timestamp，类型string，值1713427200
+公共参数（所有请求都必须传递的参数。）：sign，类型string，对参数 user + UserKEY + timestamp 拼接后（+号表示连接符）进行SHA1加密得到签名，值为40位小写字符串
+私有参数：content，类型string，打印内容,打印内容使用 GBK 编码判断,不能超过12K
+私有参数：sn，类型string，值02S234163178448
+额外信息：userKey，类型string，值0a573c4eab424185baf408b953ca1e08

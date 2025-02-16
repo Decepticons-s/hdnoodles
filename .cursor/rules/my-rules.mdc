@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+---
+
+# Your rule content
+
+- You can @ files here
+- You can use markdown but dont have to
+Always respond in 中文
+如果有命令需要执行，先暂停创建文件或代码，让我先执行命令
+修改代码时，不要修改不必要的，已完善的功能代码
