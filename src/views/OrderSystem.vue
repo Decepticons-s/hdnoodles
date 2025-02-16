@@ -239,7 +239,7 @@ const products = ref([
     categoryId: 1,
     name: '牛肉面',
     basePrice: 9,
-    image: '/images/beef-noodle.jpg',
+    image: '/images/niuroumian.jpg',
     description: '精选牛肉，汤鲜味美',
     options: {
       types: ['面', '米粉'],
@@ -253,7 +253,7 @@ const products = ref([
     categoryId: 1,
     name: '炸酱面',
     basePrice: 9,
-    image: '/images/zhajiangmian.jpg',
+    image: '/images/niuroumian.jpg',
     description: '传统炸酱配方，酱香浓郁',
     options: {
       types: ['面', '米粉'],
@@ -267,7 +267,7 @@ const products = ref([
     categoryId: 1,
     name: '素面',
     basePrice: 7,
-    image: '/images/sumian.jpg',
+    image: '/images/niuroumian.jpg',
     description: '清淡爽口，素食者首选',
     options: {
       types: ['面', '米粉'],
@@ -323,7 +323,7 @@ const products = ref([
     categoryId: 3,
     name: '牛肉丸金汤酸辣',
     basePrice: 13,
-    image: '/images/niurouwan.jpg',
+    image: '/images/niuroumian.jpg',
     description: '手工牛肉丸搭配酸辣金汤',
     options: {
       types: ['面', '米粉'],
@@ -446,6 +446,11 @@ watch(showDetailDialog, (val) => {
   display: flex;
   height: 100vh;
   background: #f5f5f5;
+  flex-direction: column;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+  }
 }
 
 .category-sidebar {
@@ -453,6 +458,8 @@ watch(showDetailDialog, (val) => {
   background: #fff;
   box-shadow: 2px 0 8px rgba(0,0,0,0.1);
   padding: 20px 0;
+  position: relative;
+  z-index: 100;
 
   .logo {
     padding: 0 20px;
@@ -483,14 +490,42 @@ watch(showDetailDialog, (val) => {
     }
   }
 
-  @media (max-width: 1200px) {
-    width: 180px;
-  }
-  
   @media (max-width: 768px) {
     width: 100%;
-    height: auto;
-    position: static;
+    height: 60px;
+    padding: 0;
+    overflow-x: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+    .logo {
+      display: none;
+    }
+
+    .category-list {
+      display: flex;
+      padding: 0 10px;
+    }
+
+    .category-item {
+      flex: 0 0 auto;
+      padding: 10px 15px;
+      margin: 10px 5px;
+      border-radius: 20px;
+      white-space: nowrap;
+
+      span {
+        display: none;
+      }
+
+      .el-icon {
+        margin-right: 0;
+      }
+
+      &.active {
+        background: #409eff;
+        color: white;
+      }
+    }
   }
 }
 
@@ -498,6 +533,11 @@ watch(showDetailDialog, (val) => {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+  height: calc(100vh - 60px);
+
+  @media (min-width: 768px) {
+    height: auto;
+  }
 
   .top-bar {
     display: flex;
@@ -506,24 +546,16 @@ watch(showDetailDialog, (val) => {
     
     @media (min-width: 768px) {
       flex-direction: row;
-    }
-    
-    .time-info {
-      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 8px;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
     }
   }
 
   .products-grid {
     display: grid;
     grid-template-columns: repeat(1, 1fr);
+    gap: 15px;
+    padding-top: 20px;
 
     @media (min-width: 576px) {
       grid-template-columns: repeat(2, 1fr);
@@ -550,6 +582,7 @@ watch(showDetailDialog, (val) => {
   cursor: pointer;
   transition: transform 0.3s;
   box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  position: relative;
 
   &:hover {
     transform: translateY(-5px);
@@ -558,11 +591,13 @@ watch(showDetailDialog, (val) => {
   .product-image {
     height: 150px;
     overflow: hidden;
+    background: #f8f8f8;
 
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transition: transform 0.3s;
     }
   }
 
@@ -573,6 +608,9 @@ watch(showDetailDialog, (val) => {
       margin: 0;
       font-size: 16px;
       color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .price {
@@ -781,29 +819,10 @@ watch(showDetailDialog, (val) => {
     min-height: 100vh;
   }
 
-  .category-sidebar {
-    width: 100%;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    padding: 10px 0;
-
-    .category-list {
-      display: flex;
-      overflow-x: auto;
-      padding: 0 10px;
-
-      .category-item {
-        flex: 0 0 auto;
-        padding: 10px 15px;
-        white-space: nowrap;
-      }
-    }
-  }
-
   .main-content {
     padding: 10px;
     overflow-x: hidden;
+    height: calc(100vh - 120px);
   }
 
   .products-grid {
