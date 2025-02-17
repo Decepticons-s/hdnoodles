@@ -89,18 +89,28 @@ onMounted(() => {
 .order-detail-page {
   min-height: 100vh;
   background: #f5f5f5;
-  padding: 40px;
+  padding: 0;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
 }
 
 .order-detail-content {
-  max-width: 800px;
   width: 100%;
+  height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   background: #fff;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  border-radius: 0;
+  padding: 12px 16px;
+  box-shadow: none;
+  
+  @media (min-width: 768px) {
+    max-width: 800px;
+    height: auto;
+    border-radius: 12px;
+    padding: 30px;
+    margin: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
 }
 
 .header {
@@ -130,8 +140,8 @@ onMounted(() => {
 .order-info {
   background: #fafafa;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 30px;
+  padding: 12px;
+  margin-bottom: 16px;
 
   .info-item {
     display: flex;
@@ -159,10 +169,10 @@ onMounted(() => {
 }
 
 .order-items {
-  margin-bottom: 30px;
+  margin-bottom: 16px;
 
   h3 {
-    margin: 0 0 20px;
+    margin: 0 0 12px;
     padding-bottom: 15px;
     border-bottom: 1px solid #eee;
   }
@@ -206,13 +216,62 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 20px;
-  font-size: 18px;
+  gap: 12px;
+  font-size: 16px;
+  padding: 8px 0;
 
   .total-price {
     color: #f56c6c;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: bold;
   }
 }
-</style> 
+
+@media (max-width: 480px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+
+    .back-button {
+      padding: 8px 12px;
+    }
+
+    .order-status {
+      font-size: 14px;
+    }
+  }
+
+  .info-item {
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+
+    .label {
+      width: auto;
+      font-size: 14px;
+    }
+
+    .value {
+      font-size: 15px;
+      
+      &.highlight {
+        font-size: 16px;
+      }
+    }
+  }
+
+  .item {
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 0;
+
+    .item-price {
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+}
+</style>

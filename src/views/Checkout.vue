@@ -28,7 +28,7 @@
         <el-radio-group v-model="paymentMethod">
           <el-radio value="unionpay">
             <el-icon><CreditCard /></el-icon>
-            银联支付
+            微信支付
           </el-radio>
         </el-radio-group>
       </div>
@@ -148,6 +148,18 @@ const handlePayment = async () => {
   try {
     const paymentUrl = await decodeQRCode()
     
+    // 创建订单
+    currentOrder.value = await orderStore.createOrder(cartStore.items, cartStore.total); // 确保创建订单成功
+    console.log('当前订单:', currentOrder.value); // 添加调试信息
+
+    // 打印小票
+    const printSuccess = await printOrder(currentOrder.value); // 确保打印请求成功
+    if (printSuccess) {
+      ElMessage.success('小票打印成功');
+    } else {
+      ElMessage.error('小票打印失败');
+    }
+
     // 微信环境特殊处理
     if (/MicroMessenger/i.test(navigator.userAgent)) {
       // 方案1：使用location跳转（会离开当前页面）
@@ -177,16 +189,6 @@ const handlePayment = async () => {
       const paymentWindow = window.open('', '_blank')
       paymentWindow.location.href = paymentUrl
     }
-
-    // 创建订单
-    currentOrder.value = orderStore.createOrder(
-      cartStore.items,
-      cartStore.total
-    )
-    
-    // 打印小票
-    await printOrder(currentOrder.value)
-    ElMessage.success('小票打印成功')
 
     // 清空购物车
     cartStore.clearCart()

@@ -25,12 +25,22 @@ export async function printOrder(order) {
     // 计算商品总价
     const totalPrice = order.items.reduce((sum, item) => {
       return sum + (item.price * item.quantity);
-    }, 0).toFixed(2);
+    }, 0);
 
     // 生成商品列表
-    const itemsContent = order.items.map(item => 
-      `${item.name} ${item.quantity}份 ￥${(item.price * item.quantity)}\n`
-    ).join('');
+    //打印商品信息的内容结构应该是：分量+（如果有备注，需要加入备注信息）+商品名+类型+及份数
+    const itemsContent = order.items.map(item => {
+      let itemContent = `${item.options.portion || '无'}`;
+      if (item.options.remark) {
+        itemContent += `${item.options.remark}`;
+      }
+      itemContent += `${item.name}`;
+      if (item.category !== '抄手/馄饨') {
+        itemContent += `${item.options.type || ''}`;
+      }
+      itemContent += `${item.quantity}份\n`;
+      return itemContent;
+    }).join('');
 
     const content = `
 <CB><C>厚道面小票
@@ -39,36 +49,38 @@ export async function printOrder(order) {
 <L><N>下单时间:${new Date(order.createTime).toLocaleString()}
 订单编号:${order.orderNumber}
 **************商品**************
-<L><B>${itemsContent}
+<L><BOLD>${itemsContent}
 <B>订单总价:￥${totalPrice}
 <BR><BR>
-`
-    
+`;
 
-    const timestamp = Math.floor(Date.now() / 1000).toString()
+    const timestamp = Math.floor(Date.now() / 1000).toString();
     const params = {
       user: USER,
       sn: SN,
       timestamp,
       sign: generateSignature(timestamp),
-      content: content, // 直接使用原始字符串
+      content: content,
       times: 1,
-      charset: 'UTF-8', // 根据实际内容编码设置
-      userKey: USER_KEY
-    }
+      charset: 'UTF-8',
+      userKey: USER_KEY,
+      copies: 1
+    };
 
     const response = await axios.post('/api/openapi/xprinter/print', params, {
       headers: {
         'Content-Type': 'application/json; charset=UTF-8'
       }
-    })
+    });
 
     if (response.data.code !== 0) {
-      throw new Error(`打印失败：${response.data.msg}`)
+      console.error(`打印失败：${response.data.msg}`);
+      return false; // 返回失败状态
     }
-    return true
+    return true; // 返回成功状态
   } catch (error) {
-    console.error('打印请求失败:', error)
-    throw new Error('打印机连接异常，请联系工作人员')
+    console.error('打印请求失败:', error);
+    // 记录错误信息，但不抛出异常
+    return false; // 返回失败状态
   }
-} 
+}

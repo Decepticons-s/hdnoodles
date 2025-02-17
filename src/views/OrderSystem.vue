@@ -12,8 +12,7 @@
           :class="['category-item', { active: currentCategory === category.id }]"
           @click="currentCategory = category.id"
         >
-          <el-icon><component :is="category.icon" /></el-icon>
-          <span>{{ category.name }}</span>
+          {{ category.name }}
         </div>
       </div>
     </div>
@@ -22,20 +21,11 @@
     <div class="main-content">
       <!-- 顶部信息栏 -->
       <div class="top-bar">
-        <div class="time-info">
-          <el-icon><Clock /></el-icon>
-          <span>{{ currentTime }}</span>
-        </div>
         <div class="actions">
           <el-button 
-            type="primary" 
-            @click="$router.push('/display')"
-          >
-            <el-icon><Monitor /></el-icon>
-            取餐号大屏
-          </el-button>
-          <el-button 
             @click="$router.push('/history')"
+            type="primary"
+            class="history-btn"
           >
             <el-icon><List /></el-icon>
             订单历史
@@ -77,7 +67,8 @@
     <el-dialog
       v-model="showDetailDialog"
       :title="currentProduct?.name"
-      width="500px"
+      width="400px"
+      :style="{ maxHeight: '80vh', overflowY: 'auto' }"
       custom-class="product-dialog"
     >
       <template v-if="currentProduct">
@@ -96,32 +87,11 @@
                   v-for="type in currentProduct.options.types" 
                   :key="type" 
                   :value="type"
-                />
+                >
+                  {{ type }}
+                </el-radio-button>
               </el-radio-group>
             </div>
-
-            <div v-if="currentProduct?.options.flavors?.length" class="option-group">
-              <h4>口味</h4>
-              <el-radio-group v-model="selectedOptions.flavor">
-                <el-radio-button 
-                  v-for="flavor in currentProduct.options.flavors" 
-                  :key="flavor" 
-                  :value="flavor"
-                />
-              </el-radio-group>
-            </div>
-
-            <div v-if="currentProduct?.options.practices?.length" class="option-group">
-              <h4>做法</h4>
-              <el-radio-group v-model="selectedOptions.practice">
-                <el-radio-button 
-                  v-for="practice in currentProduct.options.practices" 
-                  :key="practice" 
-                  :value="practice"
-                />
-              </el-radio-group>
-            </div>
-
             <div v-if="currentProduct?.options.portions?.length > 1" class="option-group">
               <h4>分量</h4>
               <el-radio-group v-model="selectedOptions.portion">
@@ -129,8 +99,14 @@
                   v-for="portion in currentProduct.options.portions" 
                   :key="portion" 
                   :value="portion"
-                />
+                >
+                  {{ portion }}
+                </el-radio-button>
               </el-radio-group>
+            </div>
+            <div class="option-group">
+              <h4>备注</h4>
+              <el-input v-model="selectedOptions.remark" placeholder="干拌，汤面，清汤，红油"></el-input>
             </div>
           </div>
         </div>
@@ -160,9 +136,8 @@
               <h3>{{ item.name }}</h3>
               <div class="item-options">
                 <span>{{ item.options.type }}</span>
-                <span>{{ item.options.flavor }}</span>
                 <span>{{ item.options.portion }}</span>
-                <span>{{ item.options.practice }}</span>
+                <span>{{ item.options.remark }}</span>
               </div>
               <div class="item-price">¥{{ item.price * item.quantity }}</div>
             </div>
@@ -204,75 +179,70 @@
         </div>
       </template>
     </el-drawer>
+
+    <div id="receipt" style="display:none;">
+      <!-- 小票内容 -->
+      <h2>小票</h2>
+      <p>感谢您的购买！</p>
+      <!-- 其他小票内容 -->
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { Clock, ShoppingCart, Minus, Plus, Delete, Monitor, List } from '@element-plus/icons-vue'
-import { useNow } from '@vueuse/core'
+import { ShoppingCart, Minus, Plus, Delete, List } from '@element-plus/icons-vue'
 import { useCartStore } from '../stores/cart'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useOrderStore } from '../stores/order'
+import { printOrder } from '../services/print'
 
 // 模拟数据
 const categories = ref([
-  { id: 1, name: '面/粉', icon: 'Bowl' },
-  { id: 2, name: '抄手/馄饨/饺子', icon: 'Food' },
-  { id: 3, name: '特色面/粉', icon: 'HotWater' },
+  { id: 1, name: '面/粉' },
+  { id: 2, name: '抄手/馄饨' },
+  { id: 3, name: '特色面' },
 ])
 
 const currentCategory = ref(1)
 const showCart = ref(false)
-
-// 获取当前时间
-const now = useNow()
-const currentTime = computed(() => {
-  return new Date(now.value).toLocaleTimeString()
-})
 
 // 模拟商品数据
 const products = ref([
   {
     id: 1,
     categoryId: 1,
-    name: '牛肉面',
+    name: '牛肉',
     basePrice: 9,
     image: '/images/niuroumian.jpg',
     description: '精选牛肉，汤鲜味美',
     options: {
       types: ['面', '米粉'],
-      flavors: ['红油', '清汤'],
-      practices: ['汤面', '干拌'],
       portions: ['一两', '二两', '三两']
     }
   },
   {
     id: 2,
     categoryId: 1,
-    name: '炸酱面',
+    name: '炸酱',
     basePrice: 9,
     image: '/images/niuroumian.jpg',
     description: '传统炸酱配方，酱香浓郁',
     options: {
       types: ['面', '米粉'],
-      flavors: ['红油', '清汤'],
-      practices: ['汤面', '干拌'],
       portions: ['一两', '二两', '三两']
     }
   },
   {
     id: 3,
     categoryId: 1,
-    name: '素面',
+    name: '素',
     basePrice: 7,
     image: '/images/niuroumian.jpg',
     description: '清淡爽口，素食者首选',
     options: {
       types: ['面', '米粉'],
-      flavors: ['原味', '红油', '麻辣'],
-      practices: ['汤面', '干拌'],
       portions: ['一两', '二两', '三两']
     }
   },
@@ -285,8 +255,6 @@ const products = ref([
     description: '现包现煮，配以秘制红油',
     options: {
       types: [],
-      flavors: ['藤椒', '红油', '清汤'],
-      practices: ['汤面', '干拌'],
       portions: ['一两', '二两', '三两']
     }
   },
@@ -299,8 +267,6 @@ const products = ref([
     description: '手工现包，皮薄馅大',
     options: {
       types: [],
-      flavors: ['红油', '清汤'],
-      practices: ['汤面', '干拌'],
       portions: ['一两', '二两', '三两']
     }
   },
@@ -313,8 +279,6 @@ const products = ref([
     description: '整颗虾仁，鲜美多汁',
     options: {
       types: [],
-      flavors: ['红油', '海鲜'],
-      practices: ['汤面', '干拌'],
       portions: ['一两', '二两', '三两']
     }
   },
@@ -327,8 +291,6 @@ const products = ref([
     description: '手工牛肉丸搭配酸辣金汤',
     options: {
       types: ['面', '米粉'],
-      flavors: [],
-      practices: [],
       portions: ['标准份']
     }
   },
@@ -341,22 +303,18 @@ const products = ref([
     description: '现炸酥肉搭配秘制酸汤',
     options: {
       types: ['面', '米粉'],
-      flavors: [],
-      practices: [],
       portions: ['标准份']
     }
   },
   {
     id: 9,
     categoryId: 3,
-    name: '火锅面',
+    name: '火锅',
     basePrice: 13,
     image: '/images/huoguomian.jpg',
     description: '川味火锅风味汤底',
     options: {
       types: ['面', '米粉'],
-      flavors: ['清汤', '红汤'],
-      practices: [],
       portions: ['标准份']
     }
   }
@@ -369,12 +327,7 @@ const filteredProducts = computed(() => {
 // 添加商品详情弹窗相关状态
 const showDetailDialog = ref(false)
 const currentProduct = ref(null)
-const selectedOptions = ref({
-  type: '',
-  flavor: '',
-  portion: '',
-  practice: ''
-})
+const selectedOptions = ref({})
 
 // 显示商品详情
 const showProductDetail = (product) => {
@@ -383,10 +336,9 @@ const showProductDetail = (product) => {
   }
   currentProduct.value = product
   selectedOptions.value = {
-    ...(product.options.types?.length && { type: product.options.types[0] }),
-    flavor: product.options.flavors[0],
-    portion: product.options.portions[0],
-    practice: product.options.practices?.[0] || '汤面'
+    type: product.options.types[0] || '',
+    portion: product.options.portions[0] || '',
+    remark: ''
   }
   showDetailDialog.value = true
 }
@@ -399,9 +351,10 @@ const cartTotal = computed(() => cartStore.total)
 
 // 更新添加到购物车的方法
 const addToCart = () => {
-  cartStore.addItem(currentProduct.value, selectedOptions.value)
-  showDetailDialog.value = false
-  ElMessage.success('已添加到购物车')
+  if (!currentProduct.value) return; // 确保当前商品存在
+  cartStore.addItem(currentProduct.value, selectedOptions.value); // 添加商品到购物车
+  showDetailDialog.value = false; // 关闭详情对话框
+  ElMessage.success('已添加到购物车'); // 显示成功消息
 }
 
 // 添加购物车抽屉组件状态
@@ -427,7 +380,7 @@ const orderStore = useOrderStore()
 // 更新今日订单数量
 const todayOrders = computed(() => orderStore.todayOrderCount)
 
-// 修改当前价格计算方式
+// 计算当前价格
 const currentPrice = computed(() => {
   if (!currentProduct.value) return 0
   return cartStore.calculatePrice(currentProduct.value, selectedOptions.value.portion)
@@ -437,6 +390,38 @@ const currentPrice = computed(() => {
 watch(showDetailDialog, (val) => {
   if (!val && window.innerWidth <= 768) {
     document.body.style.overflow = 'auto'
+  }
+})
+
+const showPaymentDialog = ref(false)
+
+// 确认支付的方法
+const confirmPayment = () => {
+  showPaymentDialog.value = true
+}
+
+// 完成支付的方法
+const completePayment = () => {
+  // 假设这里是支付逻辑
+  const paymentSuccess = true
+
+  if (paymentSuccess) {
+    showPaymentDialog.value = false
+  } else {
+    ElMessage.error('支付失败，请重试')
+  }
+}
+
+// 监控支付页面关闭状态
+watch(showPaymentDialog, (newValue) => {
+  if (!newValue) {
+    printOrder({ /* 传入订单信息 */ })
+      .then(() => {
+        ElMessage.success('小票打印成功')
+      })
+      .catch((error) => {
+        ElMessage.error(error.message)
+      })
   }
 })
 </script>
@@ -473,20 +458,15 @@ watch(showDetailDialog, (val) => {
   }
 
   .category-item {
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
+    padding: 8px 20px;
+    font-size: 16px;
+    color: #666;
     cursor: pointer;
-    transition: all 0.3s;
-
-    &:hover, &.active {
-      background: #f0f7ff;
+    
+    &.active {
       color: #409eff;
-    }
-
-    .el-icon {
-      margin-right: 10px;
-      font-size: 20px;
+      font-weight: 500;
+      background: none;
     }
   }
 
@@ -508,22 +488,14 @@ watch(showDetailDialog, (val) => {
 
     .category-item {
       flex: 0 0 auto;
-      padding: 10px 15px;
-      margin: 10px 5px;
-      border-radius: 20px;
+      padding: 8px 15px;
       white-space: nowrap;
-
-      span {
-        display: none;
-      }
-
-      .el-icon {
-        margin-right: 0;
-      }
-
+      color: #666;
+      
       &.active {
-        background: #409eff;
-        color: white;
+        color: #409eff;
+        font-weight: 500;
+        background: none;
       }
     }
   }
@@ -686,23 +658,6 @@ watch(showDetailDialog, (val) => {
     color: #666;
     margin-bottom: 20px;
     line-height: 1.5;
-  }
-
-  .options-section {
-    .option-group {
-      margin-bottom: 20px;
-
-      h4 {
-        margin: 0 0 10px;
-        color: #333;
-      }
-
-      .el-radio-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-    }
   }
 }
 
@@ -893,4 +848,4 @@ html, body {
     font-size: 16px !important;
   }
 }
-</style> 
+</style>

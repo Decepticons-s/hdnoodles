@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import OrderSystem from '@/views/OrderSystem.vue'
 import Checkout from '@/views/Checkout.vue'
 import OrderDetail from '../views/OrderDetail.vue'
-import PickupDisplay from '../views/PickupDisplay.vue'
 import OrderHistory from '../views/OrderHistory.vue'
 
 const router = createRouter({
@@ -24,11 +23,6 @@ const router = createRouter({
       component: OrderDetail
     },
     {
-      path: '/display',
-      name: 'pickupDisplay',
-      component: PickupDisplay
-    },
-    {
       path: '/history',
       name: 'orderHistory',
       component: OrderHistory
@@ -36,4 +30,4 @@ const router = createRouter({
   ]
 })
 
-export default router 
+export default router
